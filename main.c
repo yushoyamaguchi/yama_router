@@ -6,6 +6,8 @@
 #include	<signal.h>
 #include	<stdarg.h>
 #include	<sys/socket.h>
+#include	<sys/types.h>
+#include	<bits/types.h>
 #include	<arpa/inet.h>
 #include	<netinet/if_ether.h>
 #include	<netinet/ip.h>
@@ -22,7 +24,7 @@ typedef struct	{
 	int	DebugOut;
 	char	*NextRouter;
 }PARAM;
-PARAM	Param={"eth1","eth2",0,"192.168.0.254"};
+PARAM	Param={"eth1","eth2",0,"10.255.1.1"};
 
 struct in_addr	NextRouter;
 
@@ -176,7 +178,7 @@ u_char	hwaddr[6];
 
 		if(checkIPchecksum(iphdr,option,optionLen)==0){
 			DebugPrintf("[%d]:bad ip checksum\n",deviceNo);
-fprintf(stderr,"IP checksum error\n");
+			fprintf(stderr,"IP checksum error\n");
 			return(-1);
 		}
 
