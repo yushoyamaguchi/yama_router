@@ -1,1 +1,1 @@
-docker cp ../../yama_router R2:/
+sudo docker cp ../../yama_router R2:/

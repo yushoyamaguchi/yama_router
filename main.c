@@ -24,7 +24,7 @@ typedef struct	{
 	int	DebugOut;
 	char	*NextRouter;
 }PARAM;
-PARAM	Param={"eth1","eth2",0,"10.255.1.1"};
+PARAM	Param={"net0","net1",0,"10.255.1.1"};
 
 struct in_addr	NextRouter;
 
