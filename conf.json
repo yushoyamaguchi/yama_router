@@ -1,0 +1,18 @@
+{
+    "interfaces":[
+        "net0",
+        "net1"
+    ],
+    "routing_table":[
+        {
+            "dest_addr":"10.255.1.1",
+            "sub_mask":"0",
+            "next_hop":"10.255.1.1"
+        }
+    ]
+
+
+
+
+
+}

@@ -22,13 +22,9 @@
 
 
 
-typedef struct	{
-	char	*Device1;
-	char	*Device2;
-	int	DebugOut;
-	char	*NextRouter;
-}PARAM;
+
 PARAM	Param={"net0","net1",0,"10.255.1.1"};
+PARAM	Param_test1;
 
 struct in_addr	NextRouter;
 
@@ -313,9 +309,11 @@ int main(int argc,char *argv[],char *envp[])
 	char	buf[80];
 	pthread_attr_t	attr;
 	int	status;
-	
-	json_t *json_object;
+
+	json_t json_object;
     json_error_t jerror;
+
+	json_read(&Param_test1,&json_object,&jerror);
 
 	inet_aton(Param.NextRouter,&NextRouter);
 	DebugPrintf("NextRouter=%s\n",my_inet_ntoa_r(&NextRouter,buf,sizeof(buf)));
