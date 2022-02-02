@@ -13,10 +13,14 @@
 #include	<netinet/ip.h>
 #include	<netinet/ip_icmp.h>
 #include	<pthread.h>
+#include	<jansson.h>
 #include	"netutil.h"
 #include	"base.h"
 #include	"ip2mac.h"
 #include	"sendBuf.h"
+#include	"json_config.h"
+
+
 
 typedef struct	{
 	char	*Device1;
@@ -56,12 +60,12 @@ int DebugPerror(char *msg)
 
 int SendIcmpTimeExceeded(int deviceNo,struct ether_header *eh,struct iphdr *iphdr,u_char *data,int size)
 {
-struct ether_header	reh;
-struct iphdr	rih;
-struct icmp	icmp;
-u_char	*ipptr;
-u_char	*ptr,buf[1500];
-int	len;
+	struct ether_header	reh;
+	struct iphdr	rih;
+	struct icmp	icmp;
+	u_char	*ipptr;
+	u_char	*ptr,buf[1500];
+	int	len;
 
 	memcpy(reh.ether_dhost,eh->ether_shost,6);
 	memcpy(reh.ether_shost,Device[deviceNo].hwaddr,6);
@@ -109,12 +113,12 @@ int	len;
 
 int AnalyzePacket(int deviceNo,u_char *data,int size)
 {
-u_char	*ptr;
-int	lest;
-struct ether_header	*eh;
-char	buf[80];
-int	tno;
-u_char	hwaddr[6];
+	u_char	*ptr;
+	int	lest;
+	struct ether_header	*eh;
+	char	buf[80];
+	int	tno;
+	u_char	hwaddr[6];
 
 	ptr=data;
 	lest=size;
@@ -240,9 +244,9 @@ u_char	hwaddr[6];
 
 int Router()
 {
-struct pollfd	targets[2];
-int	nready,i,size;
-u_char	buf[2048];
+	struct pollfd	targets[2];
+	int	nready,i,size;
+	u_char	buf[2048];
 
 	targets[0].fd=Device[0].soc;
 	targets[0].events=POLLIN|POLLERR;
@@ -278,7 +282,7 @@ u_char	buf[2048];
 
 int DisableIpForward()
 {
-FILE    *fp;
+	FILE    *fp;
 
 	if((fp=fopen("/proc/sys/net/ipv4/ip_forward","w"))==NULL){
 		DebugPrintf("cannot write /proc/sys/net/ipv4/ip_forward\n");
@@ -306,9 +310,12 @@ pthread_t	BufTid;
 
 int main(int argc,char *argv[],char *envp[])
 {
-char	buf[80];
-pthread_attr_t	attr;
-int	status;
+	char	buf[80];
+	pthread_attr_t	attr;
+	int	status;
+	
+	json_t *json_object;
+    json_error_t jerror;
 
 	inet_aton(Param.NextRouter,&NextRouter);
 	DebugPrintf("NextRouter=%s\n",my_inet_ntoa_r(&NextRouter,buf,sizeof(buf)));
