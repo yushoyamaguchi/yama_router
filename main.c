@@ -25,7 +25,7 @@
 
 
 PARAM	Param={"net0","net1",0,"10.255.1.1"};
-PARAM	Param_test1;
+PARAM_new	Param_test1;
 
 struct in_addr	NextRouter;
 
@@ -315,6 +315,8 @@ int main(int argc,char *argv[],char *envp[])
     json_error_t jerror;
 
 	json_read(&Param_test1,&json_object,&jerror);
+
+	printf("%s\n",Param_test1.Device[0]);
 
 	inet_aton(Param.NextRouter,&NextRouter);
 	DebugPrintf("NextRouter=%s\n",my_inet_ntoa_r(&NextRouter,buf,sizeof(buf)));

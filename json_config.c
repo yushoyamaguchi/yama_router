@@ -17,7 +17,7 @@
 
 #include	"json_config.h"
 
-void json_read(PARAM *pa,json_t *json_object,json_error_t *jerror){
+void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror){
     json_object=json_load_file("./conf.json",0,jerror);
     if(json_object==NULL){
         printf("cannot read config json\n");
@@ -31,5 +31,14 @@ void json_read(PARAM *pa,json_t *json_object,json_error_t *jerror){
     interfaces_array=json_object_get(json_object,"interfaces");
     json_array_foreach(interfaces_array,i,interfaces_object){
         strcpy(buf,json_string_value(interfaces_object));
+        pa->Device[i]=malloc(20*sizeof(char));
+        strcpy_s(pa->Device[i],20*sizeof(char),buf);
+    }
+    json_t *table_array;
+    json_t *table_object;
+    table_object=malloc(sizeof(json_t));
+    table_array=json_object_get(json_object,"routing_table");
+    json_array_foreach(table_array,i,table_object){
+        //テーブルに格納
     }
 }
