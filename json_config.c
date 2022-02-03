@@ -32,7 +32,7 @@ void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror){
     json_array_foreach(interfaces_array,i,interfaces_object){
         strcpy(buf,json_string_value(interfaces_object));
         pa->Device[i]=malloc(20*sizeof(char));
-        strcpy_s(pa->Device[i],20*sizeof(char),buf);
+        strncpy(pa->Device[i],buf,20*sizeof(char));
     }
     json_t *table_array;
     json_t *table_object;
