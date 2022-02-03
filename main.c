@@ -191,7 +191,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size)
 
 		tno=(!deviceNo);
 
-		if((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr){
+		if((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr){//ifの条件変える
 			IP2MAC	*ip2mac;
 
 			DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
@@ -225,7 +225,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size)
 			else{
 				memcpy(hwaddr,ip2mac->hwaddr,6);
 			}
-		}
+		}//ここのelseの中を書き換える
 		memcpy(eh->ether_dhost,hwaddr,6);
 		memcpy(eh->ether_shost,Device[tno].hwaddr,6);
 
