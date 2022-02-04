@@ -314,9 +314,10 @@ int main(int argc,char *argv[],char *envp[])
 
 	json_t json_object;
 	json_error_t jerror;
-	struct node root;
+	struct node *root;
+	root=malloc(sizeof(struct node));
 
-	json_read(&Param_test1,&json_object,&jerror,&root);
+	json_read(&Param_test1,&json_object,&jerror,root);
 
 	printf("%s\n",Param_test1.Device[0]);
 

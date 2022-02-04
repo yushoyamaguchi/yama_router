@@ -8,6 +8,8 @@ struct node  {
         u_int32_t       daddr_full;
 };
 
+void calc_subnet(struct node *node);
+
 void node_insert(struct node *join_node, struct node *root);
 
 

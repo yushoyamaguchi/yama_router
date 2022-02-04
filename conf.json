@@ -5,9 +5,9 @@
     ],
     "routing_table":[
         {
-            "dest_addr":"10.255.1.1",
-            "sub_mask":"0",
-            "next_hop":"10.255.1.1"
+            "dest_addr":"10.255.2.1",
+            "subnet_mask":"24",
+            "next_hop":"10.255.2.1"
         }
     ]
 

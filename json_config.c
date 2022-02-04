@@ -21,6 +21,14 @@
 struct node *json_to_node(json_t *table_object){
 	struct node *insert_node;
 	insert_node=malloc(sizeof(struct node));
+    char buf[128];
+    strcpy(buf,json_string_value(json_object_get(table_object,"dest_addr")));
+    insert_node->daddr_full=inet_addr(buf);
+    strcpy(buf,json_string_value(json_object_get(table_object,"subnet_mask")));
+    insert_node->subnet_mask=atoi(buf);
+    strcpy(buf,json_string_value(json_object_get(table_object,"next_hop")));
+    insert_node->next_hop=inet_addr(buf);
+    calc_subnet(insert_node);
 	return insert_node;
 }
 
