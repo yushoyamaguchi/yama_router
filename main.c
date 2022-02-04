@@ -19,6 +19,7 @@
 #include	"ip2mac.h"
 #include	"sendBuf.h"
 #include	"json_config.h"
+#include	"tree.h"
 
 
 
@@ -312,9 +313,10 @@ int main(int argc,char *argv[],char *envp[])
 	int	status;
 
 	json_t json_object;
-    json_error_t jerror;
+	json_error_t jerror;
+	struct node root;
 
-	json_read(&Param_test1,&json_object,&jerror);
+	json_read(&Param_test1,&json_object,&jerror,&root);
 
 	printf("%s\n",Param_test1.Device[0]);
 
@@ -370,6 +372,8 @@ int main(int argc,char *argv[],char *envp[])
 
 	close(Device[0].soc);
 	close(Device[1].soc);
+	
+	//free() of tree
 
 	return(0);
 }

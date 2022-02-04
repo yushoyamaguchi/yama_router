@@ -1,3 +1,5 @@
+
+
 typedef struct	{
 	char	*Device1;
 	char	*Device2;
@@ -12,4 +14,5 @@ typedef struct	{
 }PARAM_new;
 
 
-void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror);
+void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror,struct node *root);
+

@@ -16,8 +16,15 @@
 #include	<jansson.h>
 
 #include	"json_config.h"
+#include	"tree.h"
 
-void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror){
+struct node *json_to_node(json_t *table_object){
+	struct node *insert_node;
+	insert_node=malloc(sizeof(struct node));
+	return insert_node;
+}
+
+void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror,struct node *root){
     json_object=json_load_file("./conf.json",0,jerror);
     if(json_object==NULL){
         printf("cannot read config json\n");
@@ -38,7 +45,12 @@ void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror){
     json_t *table_object;
     table_object=malloc(sizeof(json_t));
     table_array=json_object_get(json_object,"routing_table");
+    struct node *node;
     json_array_foreach(table_array,i,table_object){
         //テーブルに格納
+        node=json_to_node(table_object);
+        node_insert(node,root);
     }
 }
+
+

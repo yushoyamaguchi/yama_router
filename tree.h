@@ -7,3 +7,8 @@ struct node  {
         u_int32_t       next_hop;
         u_int32_t       daddr_full;
 };
+
+void node_insert(struct node *join_node, struct node *root);
+
+
+void tree_destruct(struct node *root);
