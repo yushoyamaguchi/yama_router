@@ -1,7 +1,9 @@
-typedef struct  {
+struct node  {
         struct node      *parent;
         struct node      *child_left;
-        struct node      *child_left;
-        struct in_addr  addr;
-        u_int_32_t      addr_binary;
-}node;
+        struct node      *child_right;
+        u_int32_t       daddr_subnet;
+        u_int8_t        subnet_mask;
+        u_int32_t       next_hop;
+        u_int32_t       daddr_full;
+};
