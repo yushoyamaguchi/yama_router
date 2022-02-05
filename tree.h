@@ -1,3 +1,5 @@
+#define INT_BIT_NUM 32
+
 struct node  {
         struct node      *parent;
         struct node      *child_zero;

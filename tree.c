@@ -59,7 +59,40 @@ void calc_subnet(struct node *node){
 }
 
 void node_insert(struct node *join_node, struct node *root){
+    struct node *search;
+    struct node *parent_candidate;
+    search=root;
+    int i=0;
+    u_int32_t host_order_subnet;
+    host_order_subnet=ntohl(join_node->daddr_subnet);
+    u_int32_t mask = (int)1 << (sizeof(host_order_subnet) * CHAR_BIT - 1);
+    for(i=0;i<join_node->subnet_mask;i++){
+        if(mask&host_order_subnet){
+            if(search->child_one==NULL){
+                //空ノード作る
+                //else外すのもアリ
+            }
+            else{
+                parent_candidate=search;
+                search=search->child_one; 
+            }
+        }
+        else{
+            if(search->child_zero==NULL){
+                //空ノード作る
+                //else外すのもアリ
+            }
+            else{
+                parent_candidate=search;
+                search=search->child_one; 
+            }
+        }
+        mask>>=1;
+    }
+    //searchが作りこむべきノード
+
     
+    free(join_node);
 }
 
 void tree_destruct(struct node *root){
