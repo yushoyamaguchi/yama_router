@@ -250,6 +250,7 @@ int Router()
 	targets[0].events=POLLIN|POLLERR;
 	targets[1].fd=Device[1].soc;
 	targets[1].events=POLLIN|POLLERR;
+	printf("fff\n");
 
 	while(EndFlag==0){
 		switch(nready=poll(targets,2,100)){
@@ -326,13 +327,16 @@ int main(int argc,char *argv[],char *envp[])
 
 	inet_aton(Param.NextRouter,&NextRouter);
 	DebugPrintf("NextRouter=%s\n",my_inet_ntoa_r(&NextRouter,buf,sizeof(buf)));
-
 	if(GetDeviceInfo(Param.Device1,Device[0].hwaddr,&Device[0].addr,&Device[0].subnet,&Device[0].netmask)==-1){
 		DebugPrintf("GetDeviceInfo:error:%s\n",Param.Device1);
+		printf("free of tree\n");
+		tree_destruct(root);
 		return(-1);
 	}
 	if((Device[0].soc=InitRawSocket(Param.Device1,0,0))==-1){
 		DebugPrintf("InitRawSocket:error:%s\n",Param.Device1);
+		printf("free of tree\n");
+		tree_destruct(root);
 		return(-1);
 	}
 	DebugPrintf("%s OK\n",Param.Device1);
@@ -342,10 +346,14 @@ int main(int argc,char *argv[],char *envp[])
 
 	if(GetDeviceInfo(Param.Device2,Device[1].hwaddr,&Device[1].addr,&Device[1].subnet,&Device[1].netmask)==-1){
 		DebugPrintf("GetDeviceInfo:error:%s\n",Param.Device2);
+		printf("free of tree\n");
+		tree_destruct(root);
 		return(-1);
 	}
 	if((Device[1].soc=InitRawSocket(Param.Device2,0,0))==-1){
 		DebugPrintf("InitRawSocket:error:%s\n",Param.Device1);
+		printf("free of tree\n");
+		tree_destruct(root);
 		return(-1);
 	}
 	DebugPrintf("%s OK\n",Param.Device2);
@@ -376,10 +384,10 @@ int main(int argc,char *argv[],char *envp[])
 
 	close(Device[0].soc);
 	close(Device[1].soc);
-	
-	//free() of tree
+
 	//free() of Device
 
+	printf("free of tree\n");
 	tree_destruct(root);
 
 	return(0);
