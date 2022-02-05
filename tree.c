@@ -36,6 +36,7 @@ void init_tree_node(struct node *node){
 }
 
 
+
 void printb(u_int32_t v) {
   unsigned int mask = (int)1 << (sizeof(v) * CHAR_BIT - 1);
   do putchar(mask & v ? '1' : '0');
@@ -73,6 +74,11 @@ void make_empty_node(struct node *parent,struct node *myself,u_int32_t mask){
     myself->is_empty=1;
 }
 
+int is_not_zero(u_int32_t num){
+    if(num==0) return 0;
+    else return 1;
+}
+
 void node_insert(struct node *join_node, struct node *root){
     struct node *search;
     struct node *parent_candidate;
@@ -83,40 +89,32 @@ void node_insert(struct node *join_node, struct node *root){
     host_order_subnet=ntohl(join_node->daddr_subnet);
     u_int32_t mask = (int)1 << (sizeof(u_int32_t) * CHAR_BIT - 1);
     u_int32_t mask_left_one = (int)1 << (sizeof(u_int32_t) * CHAR_BIT - 1);
+    struct node *children[2];
+    int zero_or_one;
 
     for(i=0;i<join_node->subnet_mask;i++){
-        if(mask&host_order_subnet){
-            if(search->child_one==NULL){
-                new_node=malloc(sizeof(struct node));
-                init_tree_node(new_node);
-                new_node->parent=search;
-                search->child_one=new_node;
-                make_empty_node(search,new_node,(mask&host_order_subnet));
-            }
-            parent_candidate=search;
-            search=search->child_one; 
+        children[0]=search->child_zero;
+        children[1]=search->child_one;
+        zero_or_one=is_not_zero(mask&host_order_subnet);
+        if(children[zero_or_one]==NULL){
+            new_node=malloc(sizeof(struct node));
+            init_tree_node(new_node);
+            new_node->parent=search;
+            children[zero_or_one]=new_node;
+            make_empty_node(search,new_node,(mask&host_order_subnet));
         }
-        else{
-            if(search->child_zero==NULL){
-                new_node=malloc(sizeof(struct node));
-                init_tree_node(new_node);
-                new_node->parent=search;
-                search->child_zero=new_node;
-                make_empty_node(search,new_node,(mask&host_order_subnet));
-            }
-            parent_candidate=search;
-            search=search->child_zero; 
-        }
+        parent_candidate=search;
+        search=children[zero_or_one];
         mask>>=1;
         mask_left_one=(mask_left_one|mask);
     }
-    //searchが作りこむべきノード
     if(search->is_empty==0){
         //元の情報をdeleteしたことを通知
     }
     memcpy(search,join_node,sizeof(struct node));
     search->parent=parent_candidate;
-    //print_addr_of_binary(search->next_hop);    
+    print_addr_of_binary(search->daddr_subnet);  
+    print_addr_of_binary(search->next_hop);    
     free(join_node);
 }
 
