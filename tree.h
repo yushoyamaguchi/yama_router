@@ -9,7 +9,10 @@ struct node  {
         u_int32_t       next_hop;
         u_int32_t       daddr_full;
         int             is_empty;
+        int             is_root;
 };
+
+void init_tree_node(struct node *node);
 
 void calc_subnet(struct node *node);
 
@@ -18,3 +21,5 @@ void node_insert(struct node *join_node, struct node *root);
 
 
 void tree_destruct(struct node *root);
+
+

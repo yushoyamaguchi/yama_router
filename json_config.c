@@ -21,6 +21,7 @@
 struct node *json_to_node(json_t *table_object){
 	struct node *insert_node;
 	insert_node=malloc(sizeof(struct node));
+    init_tree_node(insert_node);
     char buf[128];
     strcpy(buf,json_string_value(json_object_get(table_object,"dest_addr")));
     insert_node->daddr_full=inet_addr(buf);

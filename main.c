@@ -316,7 +316,9 @@ int main(int argc,char *argv[],char *envp[])
 	json_error_t jerror;
 	struct node *root;
 	root=malloc(sizeof(struct node));
+	init_tree_node(root);
 	root->is_empty=1;
+	root->is_root=1;
 
 	json_read(&Param_test1,&json_object,&jerror,root);
 
