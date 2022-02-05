@@ -8,6 +8,11 @@
             "dest_addr":"10.255.1.1",
             "subnet_mask":"16",
             "next_hop":"10.255.1.1"
+        },
+        {
+            "dest_addr":"192.168.12.1",
+            "subnet_mask":"24",
+            "next_hop":"10.255.1.1"
         }
     ]
 

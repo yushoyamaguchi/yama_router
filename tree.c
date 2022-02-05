@@ -79,6 +79,13 @@ int is_not_zero(u_int32_t num){
     else return 1;
 }
 
+void copy_tree_position_info(struct node *from,struct node *to){
+    to->child_zero=from->child_zero;
+    to->child_one=from->child_one;
+    to->parent=from->parent;
+    to->is_root=from->is_root;
+}
+
 void node_insert(struct node *join_node, struct node *root){
     struct node *search;
     struct node *parent_candidate;
@@ -111,14 +118,37 @@ void node_insert(struct node *join_node, struct node *root){
     if(search->is_empty==0){
         //元の情報をdeleteしたことを通知
     }
-    memcpy(search,join_node,sizeof(struct node));
     search->parent=parent_candidate;
-    print_addr_of_binary(search->daddr_subnet);  
+    copy_tree_position_info(search,join_node);
+    memcpy(search,join_node,sizeof(struct node));
+
+    printf("dest_addr_subnet:");
+    print_addr_of_binary(search->daddr_subnet);
+    printf("next_hop:");
     print_addr_of_binary(search->next_hop);    
+
     free(join_node);
 }
 
+void node_del(struct node *del_node){
+    if((del_node->child_zero==NULL)&&(del_node->child_one==NULL)){
+        tree_destruct(del_node);
+    }
+    else{
+        int is_root_buf=del_node->is_root;
+        init_tree_node(del_node);
+        del_node->is_root=is_root_buf;
+    }
+}
+
 void tree_destruct(struct node *root){
+    if(root->child_zero!=NULL){
+        tree_destruct(root->child_zero);
+    }
+    if(root->child_one!=NULL){
+        tree_destruct(root->child_one);
+    }
+    free(root);
 }
 
 

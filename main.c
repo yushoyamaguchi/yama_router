@@ -380,5 +380,7 @@ int main(int argc,char *argv[],char *envp[])
 	//free() of tree
 	//free() of Device
 
+	tree_destruct(root);
+
 	return(0);
 }
