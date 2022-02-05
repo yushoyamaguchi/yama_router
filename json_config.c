@@ -29,6 +29,7 @@ struct node *json_to_node(json_t *table_object){
     strcpy(buf,json_string_value(json_object_get(table_object,"next_hop")));
     insert_node->next_hop=inet_addr(buf);
     calc_subnet(insert_node);
+    insert_node->is_empty=0;
 	return insert_node;
 }
 
@@ -59,6 +60,8 @@ void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror,struct nod
         node=json_to_node(table_object);
         node_insert(node,root);
     }
+    free(interfaces_object);
+    free(table_object);
 }
 
 

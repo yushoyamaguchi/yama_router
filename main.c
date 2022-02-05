@@ -316,6 +316,7 @@ int main(int argc,char *argv[],char *envp[])
 	json_error_t jerror;
 	struct node *root;
 	root=malloc(sizeof(struct node));
+	root->is_empty=1;
 
 	json_read(&Param_test1,&json_object,&jerror,root);
 
@@ -375,6 +376,7 @@ int main(int argc,char *argv[],char *envp[])
 	close(Device[1].soc);
 	
 	//free() of tree
+	//free() of Device
 
 	return(0);
 }
