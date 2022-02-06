@@ -6,7 +6,7 @@
     "routing_table":[
         {
             "dest_addr":"10.255.1.1",
-            "subnet_mask":"24",
+            "subnet_mask":"32",
             "next_hop":"10.255.1.1"
         },
         {

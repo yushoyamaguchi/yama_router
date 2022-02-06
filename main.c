@@ -336,7 +336,7 @@ int main(int argc,char *argv[],char *envp[])
 
 	struct node *nh;
 	struct in_addr nh_addr;
-	nh=longest_match_by_daddr(inet_addr("192.168.12.3"),root);
+	nh=longest_match_by_daddr(inet_addr("192.168.12.2"),root);
 	
 	if(nh==NULL){
 		printf("null\n");
