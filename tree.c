@@ -116,7 +116,7 @@ void node_insert(struct node *join_node, struct node *root){
         mask_left_one=(mask_left_one|mask);
     }
     if(search->is_empty==0){
-        //元の情報をdeleteしたことを通知
+        //exchange
     }
     search->parent=parent_candidate;
     copy_tree_position_info(search,join_node);

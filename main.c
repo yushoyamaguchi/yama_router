@@ -25,7 +25,7 @@
 
 
 
-PARAM	Param={"net0","net1",0,"10.255.1.1"};
+//PARAM	Param={"net0","net1",0,"10.255.1.1"};
 PARAM_new	Param_test1;
 
 struct in_addr	NextRouter;
@@ -38,7 +38,7 @@ int	EndFlag=0;
 
 int DebugPrintf(char *fmt,...)
 {
-	if(Param.DebugOut){
+	if(Param_test1.DebugOut){
 		va_list	args;
 
 		va_start(args,fmt);
@@ -51,7 +51,7 @@ int DebugPrintf(char *fmt,...)
 
 int DebugPerror(char *msg)
 {
-	if(Param.DebugOut){
+	if(Param_test1.DebugOut){
 		fprintf(stderr,"%s : %s\n",msg,strerror(errno));
 	}
 
@@ -224,8 +224,16 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 				return(-1);
 			}
 			nh_addr=nh->next_hop;
-			//どのインターフェースから出すかを逆引き
-			//tno=インターフェース
+			int found_nh_subnet=0;
+			for(tno=0;tno<Param_test1.num_of_dev;tno++){
+				if((tno!=deviceNo)&&((nh_addr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
+					found_nh_subnet=1;
+					break;
+				}
+			}
+			if(found_nh_subnet==0){
+				return(-1);
+			}
 			ip2mac=Ip2Mac(tno,nh_addr,NULL);
 			if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
 				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
@@ -237,44 +245,6 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 			}
 
 		}
-
-		/*if((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr){//ifの条件変える
-			IP2MAC	*ip2mac;
-
-			DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
-
-			if(iphdr->daddr==Device[tno].addr.s_addr){
-				DebugPrintf("[%d]:recv:myaddr\n",deviceNo);
-				return(1);
-			}
-
-			ip2mac=Ip2Mac(tno,iphdr->daddr,NULL);
-			if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-				AppendSendData(ip2mac,1,iphdr->daddr,data,size);
-				return(-1);
-			}
-			else{
-				memcpy(hwaddr,ip2mac->hwaddr,6);
-			}
-		}
-		else{
-			IP2MAC	*ip2mac;
-
-			DebugPrintf("[%d]:%s to NextRouter\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
-			
-
-			ip2mac=Ip2Mac(tno,NextRouter.s_addr,NULL);
-			if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-				AppendSendData(ip2mac,1,NextRouter.s_addr,data,size);
-				return(-1);
-			}
-			else{
-				memcpy(hwaddr,ip2mac->hwaddr,6);
-			}
-		}*/
-		//ここのelseの中を書き換える
 		memcpy(eh->ether_dhost,hwaddr,6);
 		memcpy(eh->ether_shost,Device[tno].hwaddr,6);
 
@@ -388,13 +358,10 @@ int main(int argc,char *argv[],char *envp[])
 
 
 	printf("%s\n",Param_test1.Device[0]);
-
-	inet_aton(Param.NextRouter,&NextRouter);
-	DebugPrintf("NextRouter=%s\n",my_inet_ntoa_r(&NextRouter,buf,sizeof(buf)));
 	
 	for(i=0;i<(Param_test1.num_of_dev);i++){
 		if(GetDeviceInfo(Param_test1.Device[i],Device[i].hwaddr,&Device[i].addr,&Device[i].subnet,&Device[i].netmask)==-1){
-			DebugPrintf("GetDeviceInfo:error:%s\n",Param.Device1);
+			DebugPrintf("GetDeviceInfo:error:%s\n",Param_test1.Device[i]);
 			printf("free of tree\n");
 			tree_destruct(root);
 			return(-1);
