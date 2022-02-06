@@ -117,6 +117,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 	struct ether_header	*eh;
 	char	buf[80];
 	int	tno;
+	int is_connected_to_dst=0;
 	u_char	hwaddr[6];
 
 	ptr=data;
@@ -191,9 +192,53 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 			return(-1);
 		}
 
-		tno=(!deviceNo);
+		//tno=(!deviceNo);
 
-		if((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr){//ifの条件変える
+		for(tno=0;tno<Param_test1.num_of_dev;tno++){
+			if((tno!=deviceNo)&&((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
+				IP2MAC	*ip2mac;
+				DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
+				if(iphdr->daddr==Device[tno].addr.s_addr){
+					DebugPrintf("[%d]:recv:myaddr\n",deviceNo);
+					return(1);
+				}
+				ip2mac=Ip2Mac(tno,iphdr->daddr,NULL);
+				if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
+					DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
+					AppendSendData(ip2mac,1,iphdr->daddr,data,size);
+					return(-1);
+				}
+				else{
+					memcpy(hwaddr,ip2mac->hwaddr,6);
+				}
+				is_connected_to_dst=1;
+				break;
+			}
+		}
+		if(is_connected_to_dst==0){
+			IP2MAC	*ip2mac;
+			struct node *nh;
+			u_int32_t nh_addr;
+			nh=longest_match_by_daddr(iphdr->daddr,table_root);
+			if(nh==NULL){
+				return(-1);
+			}
+			nh_addr=nh->next_hop;
+			//どのインターフェースから出すかを逆引き
+			//tno=インターフェース
+			ip2mac=Ip2Mac(tno,nh_addr,NULL);
+			if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
+				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
+				AppendSendData(ip2mac,1,nh_addr,data,size);
+				return(-1);
+			}
+			else{
+				memcpy(hwaddr,ip2mac->hwaddr,6);
+			}
+
+		}
+
+		/*if((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr){//ifの条件変える
 			IP2MAC	*ip2mac;
 
 			DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
@@ -217,11 +262,6 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 			IP2MAC	*ip2mac;
 
 			DebugPrintf("[%d]:%s to NextRouter\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
-
-			
-			/*u_int32_t nh_addr;
-			struct node *nh;
-			nh=longest_match_by_daddr(iphdr->daddr,root);*/
 			
 
 			ip2mac=Ip2Mac(tno,NextRouter.s_addr,NULL);
@@ -233,7 +273,8 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 			else{
 				memcpy(hwaddr,ip2mac->hwaddr,6);
 			}
-		}//ここのelseの中を書き換える
+		}*/
+		//ここのelseの中を書き換える
 		memcpy(eh->ether_dhost,hwaddr,6);
 		memcpy(eh->ether_shost,Device[tno].hwaddr,6);
 
