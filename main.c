@@ -26,7 +26,7 @@
 
 
 //PARAM	Param={"net0","net1",0,"10.255.1.1"};
-PARAM_new	Param_test1;
+PARAM_new	Param_json;
 
 struct in_addr	NextRouter;
 
@@ -38,7 +38,7 @@ int	EndFlag=0;
 
 int DebugPrintf(char *fmt,...)
 {
-	if(Param_test1.DebugOut){
+	if(Param_json.DebugOut){
 		va_list	args;
 
 		va_start(args,fmt);
@@ -51,7 +51,7 @@ int DebugPrintf(char *fmt,...)
 
 int DebugPerror(char *msg)
 {
-	if(Param_test1.DebugOut){
+	if(Param_json.DebugOut){
 		fprintf(stderr,"%s : %s\n",msg,strerror(errno));
 	}
 
@@ -194,7 +194,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 
 		//tno=(!deviceNo);
 
-		for(tno=0;tno<Param_test1.num_of_dev;tno++){
+		for(tno=0;tno<Param_json.num_of_dev;tno++){
 			if((tno!=deviceNo)&&((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
 				IP2MAC	*ip2mac;
 				DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
@@ -225,7 +225,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 			}
 			nh_addr=nh->next_hop;
 			int found_nh_subnet=0;
-			for(tno=0;tno<Param_test1.num_of_dev;tno++){
+			for(tno=0;tno<Param_json.num_of_dev;tno++){
 				if((tno!=deviceNo)&&((nh_addr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
 					found_nh_subnet=1;
 					break;
@@ -337,9 +337,9 @@ int main(int argc,char *argv[],char *envp[])
 	root->is_empty=1;
 	root->is_root=1;
 
-	init_PARAM_new(&Param_test1);
+	init_PARAM_new(&Param_json);
 
-	json_read(&Param_test1,&json_object,&jerror,root);
+	json_read(&Param_json,&json_object,&jerror,root);
 
 	show_tree(root);
 
@@ -357,22 +357,22 @@ int main(int argc,char *argv[],char *envp[])
 	}
 
 
-	printf("%s\n",Param_test1.Device[0]);
+	printf("%s\n",Param_json.Device[0]);
 	
-	for(i=0;i<(Param_test1.num_of_dev);i++){
-		if(GetDeviceInfo(Param_test1.Device[i],Device[i].hwaddr,&Device[i].addr,&Device[i].subnet,&Device[i].netmask)==-1){
-			DebugPrintf("GetDeviceInfo:error:%s\n",Param_test1.Device[i]);
+	for(i=0;i<(Param_json.num_of_dev);i++){
+		if(GetDeviceInfo(Param_json.Device[i],Device[i].hwaddr,&Device[i].addr,&Device[i].subnet,&Device[i].netmask)==-1){
+			DebugPrintf("GetDeviceInfo:error:%s\n",Param_json.Device[i]);
 			printf("free of tree\n");
 			tree_destruct(root);
 			return(-1);
 		}
-		if((Device[0].soc=InitRawSocket(Param_test1.Device[i],0,0))==-1){
-			DebugPrintf("InitRawSocket:error:%s\n",Param_test1.Device[i]);
+		if((Device[0].soc=InitRawSocket(Param_json.Device[i],0,0))==-1){
+			DebugPrintf("InitRawSocket:error:%s\n",Param_json.Device[i]);
 			printf("free of tree\n");
 			tree_destruct(root);
 			return(-1);
 		}
-		DebugPrintf("%s OK\n",Param_test1.Device[i]);
+		DebugPrintf("%s OK\n",Param_json.Device[i]);
 		DebugPrintf("addr=%s\n",my_inet_ntoa_r(&Device[0].addr,buf,sizeof(buf)));
 		DebugPrintf("subnet=%s\n",my_inet_ntoa_r(&Device[0].subnet,buf,sizeof(buf)));
 		DebugPrintf("netmask=%s\n",my_inet_ntoa_r(&Device[0].netmask,buf,sizeof(buf)));
