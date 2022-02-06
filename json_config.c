@@ -18,6 +18,12 @@
 #include	"json_config.h"
 #include	"tree.h"
 
+void init_PARAM_new(PARAM_new *par){
+    par->num_of_dev=0;
+    par->DebugOut=0;
+}
+
+
 struct node *json_to_node(json_t *table_object){
 	struct node *insert_node;
 	insert_node=malloc(sizeof(struct node));
@@ -46,10 +52,12 @@ void json_read(PARAM_new *pa,json_t *json_object,json_error_t *jerror,struct nod
     json_t *interfaces_object;
     interfaces_object=malloc(sizeof(json_t));
     interfaces_array=json_object_get(json_object,"interfaces");
+    pa->num_of_dev=0;
     json_array_foreach(interfaces_array,i,interfaces_object){
         strcpy(buf,json_string_value(interfaces_object));
         pa->Device[i]=malloc(20*sizeof(char));
         strncpy(pa->Device[i],buf,20*sizeof(char));
+        pa->num_of_dev++;
     }
     json_t *table_array;
     json_t *table_object;

@@ -30,7 +30,7 @@ PARAM_new	Param_test1;
 
 struct in_addr	NextRouter;
 
-DEVICE	Device[2];
+DEVICE	Device[MAX_DEV_NUM];
 
 int	EndFlag=0;
 
@@ -58,8 +58,7 @@ int DebugPerror(char *msg)
 	return(0);
 }
 
-int SendIcmpTimeExceeded(int deviceNo,struct ether_header *eh,struct iphdr *iphdr,u_char *data,int size)
-{
+int SendIcmpTimeExceeded(int deviceNo,struct ether_header *eh,struct iphdr *iphdr,u_char *data,int size){
 	struct ether_header	reh;
 	struct iphdr	rih;
 	struct icmp	icmp;
@@ -258,7 +257,6 @@ int Router(struct node *table_root)
 	targets[0].events=POLLIN|POLLERR;
 	targets[1].fd=Device[1].soc;
 	targets[1].events=POLLIN|POLLERR;
-	printf("fff\n");
 
 	while(EndFlag==0){
 		switch(nready=poll(targets,2,100)){
@@ -318,7 +316,7 @@ int main(int argc,char *argv[],char *envp[])
 {
 	char	buf[80];
 	pthread_attr_t	attr;
-	int	status;
+	int	status,i;
 
 	json_t json_object;
 	json_error_t jerror;
@@ -327,6 +325,8 @@ int main(int argc,char *argv[],char *envp[])
 	init_tree_node(root);
 	root->is_empty=1;
 	root->is_root=1;
+
+	init_PARAM_new(&Param_test1);
 
 	json_read(&Param_test1,&json_object,&jerror,root);
 
@@ -350,39 +350,26 @@ int main(int argc,char *argv[],char *envp[])
 
 	inet_aton(Param.NextRouter,&NextRouter);
 	DebugPrintf("NextRouter=%s\n",my_inet_ntoa_r(&NextRouter,buf,sizeof(buf)));
-	if(GetDeviceInfo(Param.Device1,Device[0].hwaddr,&Device[0].addr,&Device[0].subnet,&Device[0].netmask)==-1){
-		DebugPrintf("GetDeviceInfo:error:%s\n",Param.Device1);
-		printf("free of tree\n");
-		tree_destruct(root);
-		return(-1);
+	
+	for(i=0;i<(Param_test1.num_of_dev);i++){
+		if(GetDeviceInfo(Param_test1.Device[i],Device[i].hwaddr,&Device[i].addr,&Device[i].subnet,&Device[i].netmask)==-1){
+			DebugPrintf("GetDeviceInfo:error:%s\n",Param.Device1);
+			printf("free of tree\n");
+			tree_destruct(root);
+			return(-1);
+		}
+		if((Device[0].soc=InitRawSocket(Param_test1.Device[i],0,0))==-1){
+			DebugPrintf("InitRawSocket:error:%s\n",Param_test1.Device[i]);
+			printf("free of tree\n");
+			tree_destruct(root);
+			return(-1);
+		}
+		DebugPrintf("%s OK\n",Param_test1.Device[i]);
+		DebugPrintf("addr=%s\n",my_inet_ntoa_r(&Device[0].addr,buf,sizeof(buf)));
+		DebugPrintf("subnet=%s\n",my_inet_ntoa_r(&Device[0].subnet,buf,sizeof(buf)));
+		DebugPrintf("netmask=%s\n",my_inet_ntoa_r(&Device[0].netmask,buf,sizeof(buf)));
 	}
-	if((Device[0].soc=InitRawSocket(Param.Device1,0,0))==-1){
-		DebugPrintf("InitRawSocket:error:%s\n",Param.Device1);
-		printf("free of tree\n");
-		tree_destruct(root);
-		return(-1);
-	}
-	DebugPrintf("%s OK\n",Param.Device1);
-	DebugPrintf("addr=%s\n",my_inet_ntoa_r(&Device[0].addr,buf,sizeof(buf)));
-	DebugPrintf("subnet=%s\n",my_inet_ntoa_r(&Device[0].subnet,buf,sizeof(buf)));
-	DebugPrintf("netmask=%s\n",my_inet_ntoa_r(&Device[0].netmask,buf,sizeof(buf)));
-
-	if(GetDeviceInfo(Param.Device2,Device[1].hwaddr,&Device[1].addr,&Device[1].subnet,&Device[1].netmask)==-1){
-		DebugPrintf("GetDeviceInfo:error:%s\n",Param.Device2);
-		printf("free of tree\n");
-		tree_destruct(root);
-		return(-1);
-	}
-	if((Device[1].soc=InitRawSocket(Param.Device2,0,0))==-1){
-		DebugPrintf("InitRawSocket:error:%s\n",Param.Device1);
-		printf("free of tree\n");
-		tree_destruct(root);
-		return(-1);
-	}
-	DebugPrintf("%s OK\n",Param.Device2);
-	DebugPrintf("addr=%s\n",my_inet_ntoa_r(&Device[1].addr,buf,sizeof(buf)));
-	DebugPrintf("subnet=%s\n",my_inet_ntoa_r(&Device[1].subnet,buf,sizeof(buf)));
-	DebugPrintf("netmask=%s\n",my_inet_ntoa_r(&Device[1].netmask,buf,sizeof(buf)));
+	
 
 	DisableIpForward();
 
