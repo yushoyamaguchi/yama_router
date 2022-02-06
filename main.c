@@ -34,6 +34,8 @@ DEVICE	Device[2];
 
 int	EndFlag=0;
 
+//struct node *root;
+
 int DebugPrintf(char *fmt,...)
 {
 	if(Param.DebugOut){
@@ -217,6 +219,12 @@ int AnalyzePacket(int deviceNo,u_char *data,int size)
 
 			DebugPrintf("[%d]:%s to NextRouter\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
 
+			
+			/*u_int32_t nh_addr;
+			struct node *nh;
+			nh=longest_match_by_daddr(iphdr->daddr,root);*/
+			
+
 			ip2mac=Ip2Mac(tno,NextRouter.s_addr,NULL);
 			if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
 				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
@@ -322,6 +330,22 @@ int main(int argc,char *argv[],char *envp[])
 	root->is_root=1;
 
 	json_read(&Param_test1,&json_object,&jerror,root);
+
+	if(root->child_zero==NULL&&root->child_one==NULL){
+		printf("root null\n");
+	}
+	struct node *nh;
+	struct in_addr nh_addr;
+	nh=longest_match_by_daddr(inet_addr("192.168.12.3"),root);
+	
+	if(nh==NULL){
+		printf("null\n");
+	}
+	else{
+		nh_addr.s_addr=nh->next_hop;
+	}
+	//nh_addr.s_addr=nh->next_hop;
+	//printf("example nexthop:%s\n",inet_ntoa(nh_addr));
 
 	printf("%s\n",Param_test1.Device[0]);
 

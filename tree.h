@@ -2,8 +2,7 @@
 
 struct node  {
         struct node      *parent;
-        struct node      *child_zero;
-        struct node      *child_one;
+        struct node      *child[2];
         u_int32_t       daddr_subnet;
         u_int8_t        subnet_mask;
         u_int32_t       next_hop;
@@ -11,6 +10,8 @@ struct node  {
         int             is_empty;
         int             is_root;
 };
+
+struct node *longest_match_by_daddr(u_int32_t daddr,struct node *root);
 
 void init_tree_node(struct node *node);
 

@@ -25,8 +25,8 @@
 
 void init_tree_node(struct node *node){
         node->parent=NULL;
-        node->child_one=NULL;
-        node->child_zero=NULL;
+        node->child[1]=NULL;
+        node->child[0]=NULL;
         node->daddr_subnet=0;
         node->subnet_mask=0;
         node->next_hop=0;
@@ -80,8 +80,8 @@ int is_not_zero(u_int32_t num){
 }
 
 void copy_tree_position_info(struct node *from,struct node *to){
-    to->child_zero=from->child_zero;
-    to->child_one=from->child_one;
+    to->child[0]=from->child[0];
+    to->child[1]=from->child[1];
     to->parent=from->parent;
     to->is_root=from->is_root;
 }
@@ -96,22 +96,22 @@ void node_insert(struct node *join_node, struct node *root){
     host_order_subnet=ntohl(join_node->daddr_subnet);
     u_int32_t mask = (int)1 << (sizeof(u_int32_t) * CHAR_BIT - 1);
     u_int32_t mask_left_one = (int)1 << (sizeof(u_int32_t) * CHAR_BIT - 1);
-    struct node *children[2];
     int zero_or_one;
 
     for(i=0;i<join_node->subnet_mask;i++){
-        children[0]=search->child_zero;
-        children[1]=search->child_one;
         zero_or_one=is_not_zero(mask&host_order_subnet);
-        if(children[zero_or_one]==NULL){
+        if(search->child[zero_or_one]==NULL){
             new_node=malloc(sizeof(struct node));
             init_tree_node(new_node);
             new_node->parent=search;
-            children[zero_or_one]=new_node;
+            search->child[zero_or_one]=new_node;
+            if(search==root){
+		        printf("%p,%p\n",search->child[0],search->child[1]);
+	        }
             make_empty_node(search,new_node,(mask&host_order_subnet));
         }
         parent_candidate=search;
-        search=children[zero_or_one];
+        search=search->child[zero_or_one];
         mask>>=1;
         mask_left_one=(mask_left_one|mask);
     }
@@ -130,8 +130,32 @@ void node_insert(struct node *join_node, struct node *root){
     free(join_node);
 }
 
+struct node *longest_match_by_daddr(u_int32_t daddr,struct node *root){
+    struct node *search;
+    struct node *current_longest=NULL;
+    search=root;
+    int zero_or_one;
+    u_int32_t current_mask_pos=num_to_mask(search->subnet_mask);//ネットバイトオーダ用マスク
+    while(1){
+        if(search->is_empty==0){
+            current_longest=search;
+        }
+        if(!(current_mask_pos>>=1)){
+            return current_longest;
+        }
+        zero_or_one=is_not_zero(daddr&current_mask_pos);
+        if(search->child[zero_or_one]!=NULL){
+            search=search->child[zero_or_one];
+            printf("child\n");
+        }
+        else{
+            return current_longest;
+        }
+    }
+}
+
 void node_del(struct node *del_node){
-    if((del_node->child_zero==NULL)&&(del_node->child_one==NULL)){
+    if((del_node->child[0]==NULL)&&(del_node->child[1]==NULL)){
         tree_destruct(del_node);
     }
     else{
@@ -142,11 +166,11 @@ void node_del(struct node *del_node){
 }
 
 void tree_destruct(struct node *root){
-    if(root->child_zero!=NULL){
-        tree_destruct(root->child_zero);
+    if(root->child[0]!=NULL){
+        tree_destruct(root->child[0]);
     }
-    if(root->child_one!=NULL){
-        tree_destruct(root->child_one);
+    if(root->child[1]!=NULL){
+        tree_destruct(root->child[1]);
     }
     free(root);
 }
