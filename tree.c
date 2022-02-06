@@ -122,10 +122,7 @@ void node_insert(struct node *join_node, struct node *root){
     copy_tree_position_info(search,join_node);
     memcpy(search,join_node,sizeof(struct node));
 
-    printf("dest_addr_subnet:");
-    print_addr_of_binary(search->daddr_subnet);
-    printf("next_hop:");
-    print_addr_of_binary(search->next_hop);    
+       
 
     free(join_node);
 }
@@ -175,6 +172,22 @@ void tree_destruct(struct node *root){
     free(root);
 }
 
+void show_tree(struct node *root){
+    if(root->child[0]!=NULL){
+        show_tree(root->child[0]);
+    }
+    if(root->child[1]!=NULL){
+        show_tree(root->child[1]);
+    }
+    if(root->is_empty==0){
+        printf("node-------------\n");
+        printf("dest_addr_subnet:");
+        print_addr_of_binary(root->daddr_subnet);
+        printf("next_hop:");
+        print_addr_of_binary(root->next_hop); 
+        printf("-----------------\n");
+    }
+}
 
 
 

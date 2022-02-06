@@ -331,7 +331,9 @@ int main(int argc,char *argv[],char *envp[])
 
 	json_read(&Param_test1,&json_object,&jerror,root);
 
-	if(root->child_zero==NULL&&root->child_one==NULL){
+	show_tree(root);
+
+	if(root->child[0]==NULL&&root->child[1]==NULL){
 		printf("root null\n");
 	}
 	struct node *nh;

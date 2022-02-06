@@ -20,6 +20,7 @@ void calc_subnet(struct node *node);
 
 void node_insert(struct node *join_node, struct node *root);
 
+void show_tree(struct node *root);
 
 void tree_destruct(struct node *root);
 
