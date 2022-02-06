@@ -111,7 +111,7 @@ int SendIcmpTimeExceeded(int deviceNo,struct ether_header *eh,struct iphdr *iphd
 	return(0);
 }
 
-int AnalyzePacket(int deviceNo,u_char *data,int size)
+int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 {
 	u_char	*ptr;
 	int	lest;
@@ -248,7 +248,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size)
 	return(0);
 }
 
-int Router()
+int Router(struct node *table_root)
 {
 	struct pollfd	targets[2];
 	int	nready,i,size;
@@ -276,7 +276,7 @@ int Router()
 							DebugPerror("read");
 						}
 						else{
-							AnalyzePacket(i,buf,size);
+							AnalyzePacket(i,buf,size,table_root);
 						}
 					}
 				}
@@ -401,7 +401,7 @@ int main(int argc,char *argv[],char *envp[])
 	signal(SIGTTOU,SIG_IGN);
 
 	DebugPrintf("router start\n");
-	Router();
+	Router(root);
 	DebugPrintf("router end\n");
 
 	pthread_join(BufTid,NULL);
