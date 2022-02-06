@@ -341,10 +341,10 @@ int main(int argc,char *argv[],char *envp[])
 
 	json_read(&Param_json,&json_object,&jerror,root);
 
-	show_tree(root);
+	//show_tree(root);
 
 
-	struct node *nh;
+	/*struct node *nh;
 	struct in_addr nh_addr;
 	nh=longest_match_by_daddr(inet_addr("192.168.12.2"),root);
 	
@@ -354,10 +354,7 @@ int main(int argc,char *argv[],char *envp[])
 	else{
 		nh_addr.s_addr=nh->next_hop;
 		printf("example nexthop:%s\n",inet_ntoa(nh_addr));
-	}
-
-
-	printf("%s\n",Param_json.Device[0]);
+	}*/
 	
 	for(i=0;i<(Param_json.num_of_dev);i++){
 		if(GetDeviceInfo(Param_json.Device[i],Device[i].hwaddr,&Device[i].addr,&Device[i].subnet,&Device[i].netmask)==-1){
