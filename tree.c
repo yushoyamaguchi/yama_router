@@ -54,6 +54,15 @@ u_int32_t num_to_mask(int n){
     return buf;
 }
 
+u_int32_t num_to_mask2(int n){
+    int i=0;
+    u_int32_t buf=0;
+    for(i=0;i<n;i++){
+        buf=2*buf+1;
+    }
+    return ntohl(~buf);
+}
+
 void print_addr_of_binary(u_int32_t addr_binary){
     struct in_addr addr;
     addr.s_addr=addr_binary;
@@ -105,9 +114,6 @@ void node_insert(struct node *join_node, struct node *root){
             init_tree_node(new_node);
             new_node->parent=search;
             search->child[zero_or_one]=new_node;
-            if(search==root){
-		        printf("%p,%p\n",search->child[0],search->child[1]);
-	        }
             make_empty_node(search,new_node,(mask&host_order_subnet));
         }
         parent_candidate=search;
@@ -133,11 +139,16 @@ struct node *longest_match_by_daddr(u_int32_t daddr,struct node *root){
     search=root;
     int zero_or_one;
     u_int32_t current_mask_pos=num_to_mask(search->subnet_mask);//ネットバイトオーダ用マスク
+    int current_mask_int=search->subnet_mask;
     while(1){
         if(search->is_empty==0){
+            printf("find!\n");
             current_longest=search;
         }
-        if(!(current_mask_pos>>=1)){
+        current_mask_int++;
+        current_mask_pos=num_to_mask(current_mask_int);
+        if(current_mask_int==IPV4_ADDR_BIT_NUM){
+            printf("return for come to leaf\n");
             return current_longest;
         }
         zero_or_one=is_not_zero(daddr&current_mask_pos);
@@ -146,6 +157,7 @@ struct node *longest_match_by_daddr(u_int32_t daddr,struct node *root){
             printf("child\n");
         }
         else{
+            printf("return for no child\n");
             return current_longest;
         }
     }

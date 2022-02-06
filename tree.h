@@ -1,4 +1,5 @@
 #define INT_BIT_NUM 32
+#define IPV4_ADDR_BIT_NUM 32
 
 struct node  {
         struct node      *parent;

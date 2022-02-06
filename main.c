@@ -333,9 +333,7 @@ int main(int argc,char *argv[],char *envp[])
 
 	show_tree(root);
 
-	if(root->child[0]==NULL&&root->child[1]==NULL){
-		printf("root null\n");
-	}
+
 	struct node *nh;
 	struct in_addr nh_addr;
 	nh=longest_match_by_daddr(inet_addr("192.168.12.3"),root);
@@ -345,9 +343,9 @@ int main(int argc,char *argv[],char *envp[])
 	}
 	else{
 		nh_addr.s_addr=nh->next_hop;
+		printf("example nexthop:%s\n",inet_ntoa(nh_addr));
 	}
-	//nh_addr.s_addr=nh->next_hop;
-	//printf("example nexthop:%s\n",inet_ntoa(nh_addr));
+
 
 	printf("%s\n",Param_test1.Device[0]);
 
