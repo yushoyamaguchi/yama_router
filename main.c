@@ -304,6 +304,7 @@ int DisableIpForward()
 void *BufThread(void *arg)
 {
 	BufferSend();
+	
 	return(NULL);
 }
 
