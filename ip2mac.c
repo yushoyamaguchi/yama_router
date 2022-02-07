@@ -10,10 +10,12 @@
 #include    <netinet/in.h>
 #include    <netinet/ip.h>
 #include    <pthread.h>
+
 #include	"netutil.h"
 #include        "base.h"
 #include        "ip2mac.h"
 #include	"sendBuf.h"
+#include	"json_config.h"
 
 extern int DebugPrintf(char *fmt,...);
 
@@ -24,10 +26,10 @@ struct	{
 	IP2MAC	*data;
 	int	size;
 	int	no;
-}Ip2Macs[2];
+}Ip2Macs[MAX_DEV_NUM];
 
-extern DEVICE	Device[2];
-extern int	ArpSoc[2];
+extern DEVICE	Device[MAX_DEV_NUM];
+extern int	ArpSoc[MAX_DEV_NUM];
 
 extern int	EndFlag;
 
