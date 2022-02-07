@@ -142,7 +142,6 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 	if(ntohs(eh->ether_type)==ETHERTYPE_ARP){
 		struct ether_arp	*arp;
 
-
 		if(lest<sizeof(struct ether_arp)){
 			DebugPrintf("[%d]:lest(%d)<sizeof(struct ether_arp)\n",deviceNo,lest);
 			return(-1);
@@ -252,11 +251,13 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 		memcpy(eh->ether_dhost,hwaddr,6);
 		memcpy(eh->ether_shost,Device[tno].hwaddr,6);
 
+
 		iphdr->ttl--;
 		iphdr->check=0;
 		iphdr->check=checksum2((u_char *)iphdr,sizeof(struct iphdr),option,optionLen);
 
 		write(Device[tno].soc,data,size);
+
 	}
 
 	return(0);
@@ -264,14 +265,14 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 
 int Router(struct node *table_root)
 {
-	struct pollfd	targets[2];
+	struct pollfd	targets[MAX_DEV_NUM];
 	int	nready,i,size;
 	u_char	buf[2048];
 
-	targets[0].fd=Device[0].soc;
-	targets[0].events=POLLIN|POLLERR;
-	targets[1].fd=Device[1].soc;
-	targets[1].events=POLLIN|POLLERR;
+	for(i=0;i<Param_json.num_of_dev;i++){
+		targets[i].fd=Device[i].soc;
+		targets[i].events=POLLIN|POLLERR;
+	}
 
 	while(EndFlag==0){
 		switch(nready=poll(targets,2,100)){
@@ -285,7 +286,7 @@ int Router(struct node *table_root)
 			default:
 				for(i=0;i<Param_json.num_of_dev;i++){
 					if(targets[i].revents&(POLLIN|POLLERR)){
-						if((size=read(Device[i].soc,buf,sizeof(buf)))<=0){
+						 if((size=read(Device[i].soc,buf,sizeof(buf)))<=0){
 							DebugPerror("read");
 						}
 						else{
@@ -346,7 +347,6 @@ int main(int argc,char *argv[],char *envp[])
 	json_read(&Param_json,&json_object,&jerror,root);
 
 	
-	
 	for(i=0;i<(Param_json.num_of_dev);i++){
 		if(GetDeviceInfo(Param_json.Device[i],Device[i].hwaddr,&Device[i].addr,&Device[i].subnet,&Device[i].netmask)==-1){
 			DebugPrintf("GetDeviceInfo:error:%s\n",Param_json.Device[i]);
@@ -388,8 +388,11 @@ int main(int argc,char *argv[],char *envp[])
 
 	pthread_join(BufTid,NULL);
 
-	close(Device[0].soc);
-	close(Device[1].soc);
+	for(i=0;i<Param_json.num_of_dev;i++){
+		close(Device[i].soc);
+		free(Param_json.Device[i]);
+	}
+
 
 	//free() of Device
 

@@ -42,7 +42,7 @@ node_configs:
   - cmd: ip addr add 10.1.13.1/24 dev net1
   - cmd: ip addr add 10.1.14.1/24 dev net2
   - cmd: ip route add 10.0.0.0/8 via 10.1.13.2
-  - cmd: ip route add 10.2.24.0/8 via 10.1.14.2
+  - cmd: ip route add 10.2.24.0/24 via 10.1.14.2
 - name: R2
   cmds:
   - cmd: ip addr add 10.2.1.1/24 dev net0
