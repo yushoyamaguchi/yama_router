@@ -114,14 +114,17 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 {
 	u_char	*ptr;
 	int	lest;
+	int i;
 	struct ether_header	*eh;
 	char	buf[80];
+	u_char	maddr_buf[6];
 	int	tno;
 	int is_connected_to_dst=0;
 	u_char	hwaddr[6];
 
 	ptr=data;
 	lest=size;
+
 
 	if(lest<sizeof(struct ether_header)){
 		DebugPrintf("[%d]:lest(%d)<sizeof(struct ether_header)\n",deviceNo,lest);
@@ -131,13 +134,28 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 	ptr+=sizeof(struct ether_header);
 	lest-=sizeof(struct ether_header);
 
+	memcpy(maddr_buf,&eh->ether_dhost,6);
+	for(i=0;i<6;i++){
+		printf("%hhn,",maddr_buf);
+	}
+	printf("\n");
+
+	memcpy(maddr_buf,Device[deviceNo].hwaddr,6);
+	for(i=0;i<6;i++){
+		printf("%hhn,",maddr_buf);
+	}
+	printf("\n");
+
 	if(memcmp(&eh->ether_dhost,Device[deviceNo].hwaddr,6)!=0){
 		DebugPrintf("[%d]:dhost not match %s\n",deviceNo,my_ether_ntoa_r((u_char *)&eh->ether_dhost,buf,sizeof(buf)));
+		printf("analyze error\n");
 		return(-1);
 	}
 
 	if(ntohs(eh->ether_type)==ETHERTYPE_ARP){
 		struct ether_arp	*arp;
+
+		printf("arp packet\n");
 
 		if(lest<sizeof(struct ether_arp)){
 			DebugPrintf("[%d]:lest(%d)<sizeof(struct ether_arp)\n",deviceNo,lest);
@@ -160,6 +178,8 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 		struct iphdr	*iphdr;
 		u_char	option[1500];
 		int	optionLen;
+
+		printf("ip packet\n");
 
 		if(lest<sizeof(struct iphdr)){
 			DebugPrintf("[%d]:lest(%d)<sizeof(struct iphdr)\n",deviceNo,lest);
@@ -196,6 +216,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 
 		for(tno=0;tno<Param_json.num_of_dev;tno++){
 			if((tno!=deviceNo)&&((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
+				printf("connected to dest\n");
 				IP2MAC	*ip2mac;
 				DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
 				if(iphdr->daddr==Device[tno].addr.s_addr){
@@ -216,6 +237,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 			}
 		}
 		if(is_connected_to_dst==0){
+			printf("unconnected to dest\n");
 			IP2MAC	*ip2mac;
 			struct node *nh;
 			u_int32_t nh_addr;

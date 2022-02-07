@@ -1,3 +1,5 @@
 *.o
 yama_router
 core
+router
+*.swp
