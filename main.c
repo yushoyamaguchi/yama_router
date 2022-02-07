@@ -114,10 +114,8 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 {
 	u_char	*ptr;
 	int	lest;
-	int i;
 	struct ether_header	*eh;
 	char	buf[80];
-	u_char	maddr_buf[6];
 	int	tno;
 	int is_connected_to_dst=0;
 	u_char	hwaddr[6];
@@ -134,28 +132,16 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 	ptr+=sizeof(struct ether_header);
 	lest-=sizeof(struct ether_header);
 
-	memcpy(maddr_buf,&eh->ether_dhost,6);
-	for(i=0;i<6;i++){
-		printf("%x,",maddr_buf[i]);
-	}
-	printf("\n");
-
-	memcpy(maddr_buf,Device[deviceNo].hwaddr,6);
-	for(i=0;i<6;i++){
-		printf("%x,",maddr_buf[i]);
-	}
-	printf("\n");
 
 	if(memcmp(&eh->ether_dhost,Device[deviceNo].hwaddr,6)!=0){
 		DebugPrintf("[%d]:dhost not match %s\n",deviceNo,my_ether_ntoa_r((u_char *)&eh->ether_dhost,buf,sizeof(buf)));
-		printf("analyze error\n");
+		//arp reqはカーネルに処理させる
 		return(-1);
 	}
 
 	if(ntohs(eh->ether_type)==ETHERTYPE_ARP){
 		struct ether_arp	*arp;
 
-		printf("arp packet\n");
 
 		if(lest<sizeof(struct ether_arp)){
 			DebugPrintf("[%d]:lest(%d)<sizeof(struct ether_arp)\n",deviceNo,lest);
@@ -178,8 +164,6 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 		struct iphdr	*iphdr;
 		u_char	option[1500];
 		int	optionLen;
-
-		printf("ip packet\n");
 
 		if(lest<sizeof(struct iphdr)){
 			DebugPrintf("[%d]:lest(%d)<sizeof(struct iphdr)\n",deviceNo,lest);
@@ -216,7 +200,6 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 
 		for(tno=0;tno<Param_json.num_of_dev;tno++){
 			if((tno!=deviceNo)&&((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
-				printf("connected to dest\n");
 				IP2MAC	*ip2mac;
 				DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
 				if(iphdr->daddr==Device[tno].addr.s_addr){
@@ -237,7 +220,6 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 			}
 		}
 		if(is_connected_to_dst==0){
-			printf("unconnected to dest\n");
 			IP2MAC	*ip2mac;
 			struct node *nh;
 			u_int32_t nh_addr;
@@ -301,7 +283,7 @@ int Router(struct node *table_root)
 			case	0:
 				break;
 			default:
-				for(i=0;i<2;i++){
+				for(i=0;i<Param_json.num_of_dev;i++){
 					if(targets[i].revents&(POLLIN|POLLERR)){
 						if((size=read(Device[i].soc,buf,sizeof(buf)))<=0){
 							DebugPerror("read");
@@ -363,20 +345,7 @@ int main(int argc,char *argv[],char *envp[])
 
 	json_read(&Param_json,&json_object,&jerror,root);
 
-	//show_tree(root);
-
-
-	/*struct node *nh;
-	struct in_addr nh_addr;
-	nh=longest_match_by_daddr(inet_addr("192.168.12.2"),root);
 	
-	if(nh==NULL){
-		printf("null\n");
-	}
-	else{
-		nh_addr.s_addr=nh->next_hop;
-		printf("example nexthop:%s\n",inet_ntoa(nh_addr));
-	}*/
 	
 	for(i=0;i<(Param_json.num_of_dev);i++){
 		if(GetDeviceInfo(Param_json.Device[i],Device[i].hwaddr,&Device[i].addr,&Device[i].subnet,&Device[i].netmask)==-1){
@@ -385,7 +354,7 @@ int main(int argc,char *argv[],char *envp[])
 			tree_destruct(root);
 			return(-1);
 		}
-		if((Device[0].soc=InitRawSocket(Param_json.Device[i],0,0))==-1){
+		if((Device[i].soc=InitRawSocket(Param_json.Device[i],0,0))==-1){
 			DebugPrintf("InitRawSocket:error:%s\n",Param_json.Device[i]);
 			printf("free of tree\n");
 			tree_destruct(root);
