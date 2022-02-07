@@ -21,7 +21,7 @@
 #include	"json_config.h"
 #include	"tree.h"
 
-
+#define POLL_TIMEOUT 100
 
 
 
@@ -263,9 +263,21 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 	return(0);
 }
 
+void cui(char *content){
+	if(strcmp(content,"quit")){
+		EndFlag=1;
+	}
+	else if(strcmp(content,"q")){
+		EndFlag=1;
+	}
+	else if(strcmp(content,"exit")){
+		EndFlag=1;
+	}
+}
+
 int Router(struct node *table_root)
 {
-	struct pollfd	targets[MAX_DEV_NUM];
+	struct pollfd	targets[MAX_DEV_NUM+1];
 	int	nready,i,size;
 	u_char	buf[2048];
 
@@ -273,9 +285,14 @@ int Router(struct node *table_root)
 		targets[i].fd=Device[i].soc;
 		targets[i].events=POLLIN|POLLERR;
 	}
+	targets[Param_json.num_of_dev].fd=0;
+	targets[Param_json.num_of_dev].events=POLLIN|POLLERR;
+
+	int is_sock=0;
 
 	while(EndFlag==0){
-		switch(nready=poll(targets,2,100)){
+		is_sock=0;
+		switch(nready=poll(targets,Param_json.num_of_dev+1,POLL_TIMEOUT)){//標準入力の分のプラス1
 			case	-1:
 				if(errno!=EINTR){
 					DebugPerror("poll");
@@ -291,8 +308,13 @@ int Router(struct node *table_root)
 						}
 						else{
 							AnalyzePacket(i,buf,size,table_root);
+							is_sock=1;
 						}
 					}
+				}
+				if((is_sock==0)&&(targets[Param_json.num_of_dev].revents&(POLLIN|POLLERR))){
+					fgets(buf, 256, stdin); 
+					cui(buf);
 				}
 				break;
 		}
