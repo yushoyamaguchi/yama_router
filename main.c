@@ -136,13 +136,13 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 
 	memcpy(maddr_buf,&eh->ether_dhost,6);
 	for(i=0;i<6;i++){
-		printf("%hhn,",maddr_buf);
+		printf("%x,",maddr_buf[i]);
 	}
 	printf("\n");
 
 	memcpy(maddr_buf,Device[deviceNo].hwaddr,6);
 	for(i=0;i<6;i++){
-		printf("%hhn,",maddr_buf);
+		printf("%x,",maddr_buf[i]);
 	}
 	printf("\n");
 
