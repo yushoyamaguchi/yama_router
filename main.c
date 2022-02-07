@@ -280,6 +280,7 @@ int Router(struct node *table_root)
 	struct pollfd	targets[MAX_DEV_NUM+1];
 	int	nready,i,size;
 	u_char	buf[2048];
+	char	stdin_buf[2048];
 
 	for(i=0;i<Param_json.num_of_dev;i++){
 		targets[i].fd=Device[i].soc;
@@ -313,8 +314,8 @@ int Router(struct node *table_root)
 					}
 				}
 				if((is_sock==0)&&(targets[Param_json.num_of_dev].revents&(POLLIN|POLLERR))){
-					fgets(buf, 256, stdin); 
-					cui(buf);
+					fgets(stdin_buf, 256, stdin); 
+					cui(stdin_buf);
 				}
 				break;
 		}
@@ -325,15 +326,7 @@ int Router(struct node *table_root)
 
 int DisableIpForward()
 {
-	FILE    *fp;
-
-	/*if((fp=fopen("/proc/sys/net/ipv4/ip_forward","w"))==NULL){
-		DebugPrintf("cannot write /proc/sys/net/ipv4/ip_forward\n");
-		return(-1);
-	}
-	fputs("0",fp);
-	fclose(fp);*/
-	system("/sbin/sysctl -w net.ipv4.ip_forward=0");
+	system("/sbin/sysctl -w net.ipv4.ip_forward=0 > /dev/null");
 
 	return(0);
 }
