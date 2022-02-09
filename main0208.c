@@ -122,70 +122,6 @@ int buf_or_write(IP2MAC *ip2mac,u_int32_t nh_addr,u_char *data,int size,u_char *
 	}
 }
 
-int SendPacketToLocal(u_char *hwaddr,u_int32_t dst_addr,int deviceNo,u_char *data,int size,struct node *table_root){
-	char	buf[80];
-	int	tno;
-	int is_connected_to_dst=0;
-
-	for(tno=0;tno<Param_json.num_of_dev;tno++){
-			if((tno!=deviceNo)&&((dst_addr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
-				IP2MAC	*ip2mac;
-				DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(dst_addr,buf,sizeof(buf)));
-				if(dst_addr==Device[tno].addr.s_addr){
-					DebugPrintf("[%d]:recv:myaddr\n",deviceNo);
-					return(-1);
-				}
-				ip2mac=Ip2Mac(tno,dst_addr,NULL);
-				if(buf_or_write(ip2mac,dst_addr,data,size,hwaddr,tno)==-1){
-					return(-1);
-				}
-				/*if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-					DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-					AppendSendData(ip2mac,tno,dst_addr,data,size);
-					return(-1);
-				}
-				else{
-					memcpy(hwaddr,ip2mac->hwaddr,6);
-				}*/
-				is_connected_to_dst=1;
-				break;
-			}
-		}
-		if(is_connected_to_dst==0){
-			IP2MAC	*ip2mac;
-			struct node *nh;
-			u_int32_t nh_addr;
-			nh=longest_match_by_daddr(dst_addr,table_root);
-			if(nh==NULL){
-				return(-1);
-			}
-			nh_addr=nh->next_hop;
-			int found_nh_subnet=0;
-			for(tno=0;tno<Param_json.num_of_dev;tno++){
-				if((tno!=deviceNo)&&((nh_addr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
-					found_nh_subnet=1;
-					break;
-				}
-			}
-			if(found_nh_subnet==0){
-				return(-1);
-			}
-			ip2mac=Ip2Mac(tno,nh_addr,NULL);
-			if(buf_or_write(ip2mac,nh_addr,data,size,hwaddr,tno)==-1){
-				return(-1);
-			}
-			/*if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-				AppendSendData(ip2mac,tno,nh_addr,data,size);
-				return(-1);
-			}
-			else{
-				memcpy(hwaddr,ip2mac->hwaddr,6);
-			}*/
-
-		}
-		return tno;
-}
 
 int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 {
@@ -274,11 +210,47 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 
 		//tno=(!deviceNo);
 
-		tno=SendPacketToLocal(hwaddr,iphdr->daddr,deviceNo,data,size,table_root);
-		if(tno==-1){
-			return(-1);
+		for(tno=0;tno<Param_json.num_of_dev;tno++){
+			if((tno!=deviceNo)&&((iphdr->daddr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
+				IP2MAC	*ip2mac;
+				DebugPrintf("[%d]:%s to TargetSegment\n",deviceNo,in_addr_t2str(iphdr->daddr,buf,sizeof(buf)));
+				if(iphdr->daddr==Device[tno].addr.s_addr){
+					DebugPrintf("[%d]:recv:myaddr\n",deviceNo);
+					return(1);
+				}
+				ip2mac=Ip2Mac(tno,iphdr->daddr,NULL);
+				if(buf_or_write(ip2mac,iphdr->daddr,data,size,hwaddr,tno)==-1){
+					return(-1);
+				}
+				is_connected_to_dst=1;
+				break;
+			}
 		}
-		
+		if(is_connected_to_dst==0){
+			IP2MAC	*ip2mac;
+			struct node *nh;
+			u_int32_t nh_addr;
+			nh=longest_match_by_daddr(iphdr->daddr,table_root);
+			if(nh==NULL){
+				return(-1);
+			}
+			nh_addr=nh->next_hop;
+			int found_nh_subnet=0;
+			for(tno=0;tno<Param_json.num_of_dev;tno++){
+				if((tno!=deviceNo)&&((nh_addr&Device[tno].netmask.s_addr)==Device[tno].subnet.s_addr)){
+					found_nh_subnet=1;
+					break;
+				}
+			}
+			if(found_nh_subnet==0){
+				return(-1);
+			}
+			ip2mac=Ip2Mac(tno,nh_addr,NULL);
+			if(buf_or_write(ip2mac,nh_addr,data,size,hwaddr,tno)==-1){
+				return(-1);
+			}
+
+		}
 		memcpy(eh->ether_dhost,hwaddr,6);
 		memcpy(eh->ether_shost,Device[tno].hwaddr,6);
 
