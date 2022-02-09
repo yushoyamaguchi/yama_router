@@ -110,6 +110,18 @@ int SendIcmpTimeExceeded(int deviceNo,struct ether_header *eh,struct iphdr *iphd
 	return(0);
 }
 
+int buf_or_write(IP2MAC *ip2mac,u_int32_t nh_addr,u_char *data,int size,u_char *hwaddr,int tno){
+	if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
+		DebugPrintf("[%d]:Ip2Mac:error or sending\n",tno);
+		AppendSendData(ip2mac,tno,nh_addr,data,size);
+		return (-1);
+	}
+	else{
+		memcpy(hwaddr,ip2mac->hwaddr,6);
+		return 1;
+	}
+}
+
 int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 {
 	u_char	*ptr;
@@ -206,13 +218,8 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 					return(1);
 				}
 				ip2mac=Ip2Mac(tno,iphdr->daddr,NULL);
-				if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-					DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-					AppendSendData(ip2mac,1,iphdr->daddr,data,size);
+				if(buf_or_write(ip2mac,iphdr->daddr,data,size,hwaddr,tno)==-1){
 					return(-1);
-				}
-				else{
-					memcpy(hwaddr,ip2mac->hwaddr,6);
 				}
 				is_connected_to_dst=1;
 				break;
@@ -238,13 +245,8 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 				return(-1);
 			}
 			ip2mac=Ip2Mac(tno,nh_addr,NULL);
-			if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-				AppendSendData(ip2mac,1,nh_addr,data,size);
+			if(buf_or_write(ip2mac,nh_addr,data,size,hwaddr,tno)==-1){
 				return(-1);
-			}
-			else{
-				memcpy(hwaddr,ip2mac->hwaddr,6);
 			}
 
 		}
