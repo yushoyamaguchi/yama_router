@@ -178,7 +178,6 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 	struct ether_header	*eh;
 	char	buf[80];
 	int	tno;
-	int is_connected_to_dst=0;
 	u_char	hwaddr[6];
 
 	ptr=data;
