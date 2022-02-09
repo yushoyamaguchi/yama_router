@@ -139,14 +139,6 @@ int SendPacketToLocal(u_char *hwaddr,u_int32_t dst_addr,int deviceNo,u_char *dat
 				if(buf_or_write(ip2mac,dst_addr,data,size,hwaddr,tno)==-1){
 					return(-1);
 				}
-				/*if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-					DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-					AppendSendData(ip2mac,tno,dst_addr,data,size);
-					return(-1);
-				}
-				else{
-					memcpy(hwaddr,ip2mac->hwaddr,6);
-				}*/
 				is_connected_to_dst=1;
 				break;
 			}
@@ -174,14 +166,6 @@ int SendPacketToLocal(u_char *hwaddr,u_int32_t dst_addr,int deviceNo,u_char *dat
 			if(buf_or_write(ip2mac,nh_addr,data,size,hwaddr,tno)==-1){
 				return(-1);
 			}
-			/*if(ip2mac->flag==FLAG_NG||ip2mac->sd.dno!=0){
-				DebugPrintf("[%d]:Ip2Mac:error or sending\n",deviceNo);
-				AppendSendData(ip2mac,tno,nh_addr,data,size);
-				return(-1);
-			}
-			else{
-				memcpy(hwaddr,ip2mac->hwaddr,6);
-			}*/
 
 		}
 		return tno;
@@ -278,7 +262,7 @@ int AnalyzePacket(int deviceNo,u_char *data,int size,struct node *table_root)
 		if(tno==-1){
 			return(-1);
 		}
-		
+
 		memcpy(eh->ether_dhost,hwaddr,6);
 		memcpy(eh->ether_shost,Device[tno].hwaddr,6);
 
